@@ -2,10 +2,12 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/ht21992/go-task-manager/models"
 )
 
 var jwtKey = []byte("my_secret_key")
@@ -13,8 +15,8 @@ var jwtKey = []byte("my_secret_key")
 type contextKey string
 
 const (
-	userContextKey = contextKey("user")
-	roleContextKey = contextKey("role")
+	UserContextKey = contextKey("user")
+	RoleContextKey = contextKey("role")
 )
 
 // JWTMiddleware verifies the JWT token and adds user info to the request context
@@ -28,7 +30,7 @@ func JWTMiddleware(next http.Handler) http.Handler {
 
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 
-		claims := &jwt.MapClaims{}
+		claims := &models.Claims{}
 		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
 		})
@@ -38,8 +40,10 @@ func JWTMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), userContextKey, (*claims)["username"])
-		ctx = context.WithValue(ctx, roleContextKey, (*claims)["role"])
+		ctx := context.WithValue(r.Context(), UserContextKey, claims.Username)
+		ctx = context.WithValue(ctx, RoleContextKey, claims.Role)
+
+		fmt.Printf("Claims: %+v\n", *claims)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

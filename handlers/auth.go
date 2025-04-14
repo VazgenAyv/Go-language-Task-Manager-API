@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+
 	// "log"
 	"net/http"
 	"time"
@@ -36,7 +37,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = stmt.Exec(creds.Username, string(hashedPassword), "user") // default role: user
+	_, err = stmt.Exec(creds.Username, string(hashedPassword), "admin") // default role: user
 	if err != nil {
 		http.Error(w, "Username already exists", http.StatusConflict)
 		return
@@ -57,6 +58,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// Query the user from the database
 	var storedHashedPassword string
 	var role string
+
 	err = database.DB.QueryRow("SELECT password, role FROM users WHERE username = ?", creds.Username).Scan(&storedHashedPassword, &role)
 	if err != nil {
 		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
@@ -73,6 +75,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &models.Claims{
 		Username: creds.Username,
+		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},

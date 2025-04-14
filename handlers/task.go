@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/ht21992/go-task-manager/database"
+	"github.com/ht21992/go-task-manager/middleware"
 	"github.com/ht21992/go-task-manager/models"
 )
 
@@ -36,7 +37,7 @@ func GetTasks(w http.ResponseWriter, r *http.Request) {
 // POST /tasks
 func CreateTask(w http.ResponseWriter, r *http.Request) {
 
-	role := r.Context().Value("role")
+	role := r.Context().Value(middleware.RoleContextKey)
 	if role != "admin" {
 		http.Error(w, "Only admin can create tasks", http.StatusForbidden)
 		return
@@ -76,7 +77,7 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	role := r.Context().Value("role")
+	role := r.Context().Value(middleware.RoleContextKey)
 	if role != "admin" {
 		http.Error(w, "Only admin can delete tasks", http.StatusForbidden)
 		return
@@ -106,7 +107,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 
-	role := r.Context().Value("role")
+	role := r.Context().Value(middleware.RoleContextKey)
 	if role != "admin" {
 		http.Error(w, "Only admin can update tasks", http.StatusForbidden)
 		return
