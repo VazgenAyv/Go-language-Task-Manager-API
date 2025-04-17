@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -12,7 +13,7 @@ import (
 
 // GET /tasks
 func GetTasks(w http.ResponseWriter, r *http.Request) {
-	rows, err := database.DB.Query("SELECT id, title, description, completed FROM tasks")
+	rows, err := database.DB.Query("SELECT id, title, description, completed, maintask FROM tasks")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -22,7 +23,7 @@ func GetTasks(w http.ResponseWriter, r *http.Request) {
 	var tasks []models.Task
 	for rows.Next() {
 		var task models.Task
-		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Completed)
+		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Completed, &task.MainTask)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -49,12 +50,13 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	statement, err := database.DB.Prepare("INSERT INTO tasks (title, description, completed) VALUES (?,?,?)")
+	statement, err := database.DB.Prepare("INSERT INTO tasks (title, description, completed, maintask) VALUES (?,?,?,?)")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	result, err := statement.Exec(task.Title, task.Description, task.Completed)
+	fmt.Println((task.MainTask))
+	result, err := statement.Exec(task.Title, task.Description, task.Completed, task.MainTask)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

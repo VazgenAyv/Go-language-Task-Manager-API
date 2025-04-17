@@ -26,7 +26,8 @@ func createTasksTable() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         description TEXT,
-        completed BOOLEAN NOT NULL CHECK (completed IN (0, 1))
+        completed BOOLEAN NOT NULL CHECK (completed IN (0, 1)),
+		maintask INT
     );`
 
 	statement, err := DB.Prepare(createTableSQL)

@@ -5,6 +5,7 @@ type Task struct {
 	Title       *string `json:"title"`       // pointer to detect null/missing
 	Description *string `json:"description"` // pointer type for optional updates
 	Completed   *bool   `json:"completed"`
+	MainTask	*int 	`json:"maintask"`
 }
 
 /*

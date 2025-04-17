@@ -37,6 +37,8 @@ func main() {
 	})
 
 	handler := c.Handler(r)
-	log.Println("Server started on :8080")
-	http.ListenAndServe(":8080", handler)
+	log.Println("Server started on :8081")
+	if err := http.ListenAndServe(":8081", handler); err != nil {
+		log.Fatalf("server exited with error: %v", err)
+	}
 }
