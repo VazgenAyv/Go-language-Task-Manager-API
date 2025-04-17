@@ -25,7 +25,7 @@ func main() {
 	api.Use(middleware.JWTMiddleware) // Apply JWT middleware
 	api.HandleFunc("/tasks", handlers.GetTasks).Methods("GET")
 	api.HandleFunc("/tasks", handlers.CreateTask).Methods("POST")
-	api.HandleFunc("/tasks/{id}", handlers.UpdateTask).Methods("PUT")
+	api.Handle("/tasks/{id}", middleware.TaskMiddleware(http.HandlerFunc(handlers.UpdateTask))).Methods("PUT")
 	api.HandleFunc("/tasks/{id}", handlers.DeleteTask).Methods("DELETE")
 
 	// CORS middleware for frontend compatibility (e.g., React)
