@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 )
 
 func TaskMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		if r.Method != http.MethodPut {
 			next.ServeHTTP(w, r)
@@ -33,6 +34,7 @@ func TaskMiddleware(next http.Handler) http.Handler {
 		}
 
 		if _, ok := payload["completed"]; !ok {
+			r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -51,13 +53,14 @@ func TaskMiddleware(next http.Handler) http.Handler {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
+		fmt.Printf("Passed")
 		if count > 0 {
 			http.Error(w, "You have pending subtasks", http.StatusForbidden)
 			return
 		}
 
 		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		fmt.Println(r.Body)
 		next.ServeHTTP(w, r)
 	})
 }
