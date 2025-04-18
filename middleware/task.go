@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -17,11 +19,18 @@ func TaskMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		var payload map[string]interface{}
-		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Unable to read request body", http.StatusInternalServerError)
+			return
 		}
 		defer r.Body.Close()
+
+		var payload map[string]interface{}
+		if err := json.Unmarshal(bodyBytes, &payload); err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			return
+		}
 
 		if _, ok := payload["completed"]; !ok {
 			next.ServeHTTP(w, r)
@@ -30,7 +39,6 @@ func TaskMiddleware(next http.Handler) http.Handler {
 
 		vars := mux.Vars(r)
 		idStr := vars["id"]
-
 		taskID, err := strconv.Atoi(idStr)
 		if err != nil {
 			http.Error(w, "Invalid task ID", http.StatusBadRequest)
@@ -45,10 +53,11 @@ func TaskMiddleware(next http.Handler) http.Handler {
 		}
 
 		if count > 0 {
-			http.Error(w, err.Error(), http.StatusForbidden)
+			http.Error(w, "You have pending subtasks", http.StatusForbidden)
 			return
 		}
 
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		next.ServeHTTP(w, r)
 	})
 }

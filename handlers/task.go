@@ -127,8 +127,9 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	// Decode the request body
 	var incoming models.Task
 	err = json.NewDecoder(r.Body).Decode(&incoming)
+	fmt.Println(err)
 	if err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+		http.Error(w, "Invalid input for task", http.StatusBadRequest)
 		return
 	}
 
@@ -159,5 +160,6 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Task Updated"})
 }
